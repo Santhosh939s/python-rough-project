@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #17202a, #2c3e50);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ecf0f1;
+            padding: 10px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2vw;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 2vw;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1vw 2vw;
+            border: none;
+            border-radius: 25px;
+            font-size: clamp(12px, 2vw, 16px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .register-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .signup-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .chess-container {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2vw;
+        }
+
+        .score {
+            font-size: clamp(12px, 2.5vw, 18px);
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 1vw;
+        }
+
+        .chess-board {
+            width: 100%;
+            max-width: 70vh;
+            aspect-ratio: 1 / 1;
+            display: grid;
+            grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+            border: 2vw solid #34495e;
+            background: #2c3e50;
+            margin: 0 auto;
+        }
+
+        .square {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(20px, 4vw, 36px);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .white {
+            background: #eeeed2;
+        }
+
+        .black {
+            background: #769656;
+        }
+
+        .square:hover {
+            opacity: 0.9;
+        }
+
+        .white-piece {
+            color: #d1d8e0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8),
+                         -1px -1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .black-piece {
+            color: #2d3436;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3),
+                         -1px -1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .timer {
+            text-align: center;
+            font-size: clamp(14px, 2.5vw, 20px);
+            margin: 2vw 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1vw;
+            border-radius: 8px;
+        }
+
+        .game-info {
+            text-align: center;
+            margin: 2vw 0;
+        }
+
+        .game-info p {
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        .win-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 2vw;
+        }
+
+        .win-screen h1 {
+            font-size: clamp(24px, 5vw, 48px);
+            color: #2ecc71;
+        }
+
+        .move-history {
+            margin: 2vw auto;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 1vw;
+        }
+
+        .move-btn {
+            font-size: clamp(16px, 3vw, 24px);
+            padding: 1vw 2vw;
+        }
+
+        .final-score {
+            font-size: clamp(16px, 3vw, 24px);
+            margin: 1vw 0;
+        }
+
+        .score-note {
+            font-size: clamp(10px, 1.8vw, 16px);
+            color: #bdc3c7;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 4vw;
+            }
+            .btn {
+                padding: 2vw 4vw;
+            }
+            .chess-board {
+                border: 3vw solid #34495e;
+            }
+            .move-history {
+                flex-direction: column;
+            }
+            .move-btn {
+                padding: 2vw 4vw;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .game-controls {
+                margin-top: 1vw;
+                justify-content: flex-end;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="auth-container">
+        <h1 style="text-align: center; margin-bottom: 4vw;">Chess Arena</h1>
+        <div class="auth-buttons">
+            <button class="btn register-btn" onclick="startGame()">Register</button>
+            <button class="btn signup-btn" onclick="startGame()">Sign Up</button>
+        </div>
+    </div>
+
+    <div class="chess-container" id="game-container">
+        <div class="top-bar">
+            <div class="score">Player: <span id="player-score">0</span> | AI: <span id="ai-score">0</span></div>
+            <div class="game-controls">
+                <button class="btn" onclick="endGame()">End Game</button>
+                <button class="btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        <div class="chess-board" id="chess-board"></div>
+        <div class="timer" id="timer">Time: 10:00</div>
+        <div class="move-history">
+            <button class="btn move-btn" id="prev-move" onclick="prevMove()">←</button>
+            <button class="btn move-btn" id="next-move" onclick="nextMove()">→</button>
+        </div>
+        <div class="game-info">
+            <p>Player (White) vs AI (Black)</p>
+        </div>
+    </div>
+
+    <div class="win-screen" id="win-screen">
+        <h1 id="win-message"></h1>
+        <div class="final-score">Final Score - Player: <span id="final-player-score"></span> | AI: <span id="final-ai-score"></span></div>
+        <p class="score-note">Score reflects pieces captured during the game.</p>
+        <button class="btn" onclick="resetGame()">Play Again</button>
+        <button class="btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        const pieces = {
+            'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+            'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+        };
+
+        const pieceValues = {
+            'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 100,
+            'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 100
+        };
+
+        let initialBoard = [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+        ];
+
+        let selectedSquare = null;
+        let playerTurn = true;
+        let timeLeft = 600;
+        let timerInterval;
+        let moveHistory = [];
+        let currentMoveIndex = -1;
+        let playerScore = 0;
+        let aiScore = 0;
+        let currentBoard = initialBoard.map(row => [...row]);
+
+        function startGame() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            currentBoard = initialBoard.map(row => [...row]);
+            initBoard();
+            startTimer();
+            updateMoveButtons();
+            updateScore();
+        }
+
+        function initBoard(displayBoard = currentBoard) {
+            const chessBoard = document.getElementById('chess-board');
+            chessBoard.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(i + j) % 2 === 0 ? 'white' : 'black'}`;
+                    if (displayBoard[i][j]) {
+                        square.classList.add(displayBoard[i][j] === displayBoard[i][j].toUpperCase() ? 'white-piece' : 'black-piece');
+                    }
+                    square.dataset.row = i;
+                    square.dataset.col = j;
+                    square.textContent = pieces[displayBoard[i][j]] || '';
+                    square.addEventListener('click', handleSquareClick);
+                    chessBoard.appendChild(square);
+                }
+            }
+        }
+
+        function handleSquareClick(e) {
+            if (!playerTurn) return;
+            
+            const row = parseInt(e.target.dataset.row);
+            const col = parseInt(e.target.dataset.col);
+            
+            if (selectedSquare) {
+                if (isLegalMove(selectedSquare, { row, col }, true)) {
+                    movePiece(selectedSquare, { row, col }, true);
+                    selectedSquare = null;
+                    setTimeout(aiMove, 900);
+                } else {
+                    selectedSquare = null;
+                    initBoard();
+                }
+            } else if (currentBoard[row][col] && currentBoard[row][col] === currentBoard[row][col].toUpperCase()) {
+                selectedSquare = { row, col };
+                e.target.style.background = '#f1c40f';
+            }
+        }
+
+        function isLegalMove(from, to, isPlayer = false) {
+            const piece = currentBoard[from.row][from.col];
+            const target = currentBoard[to.row][to.col];
+            const rowDiff = isPlayer ? to.row - from.row : from.row - to.row;
+            const colDiff = to.col - from.col;
+
+            if (target && (isPlayer ? target === target.toUpperCase() : target === target.toLowerCase())) return false;
+
+            switch (piece.toLowerCase()) {
+                case 'p':
+                    if (isPlayer) {
+                        if (from.row === 6 && rowDiff === -2 && colDiff === 0 && !currentBoard[to.row][to.col] && !currentBoard[to.row + 1][to.col]) return true;
+                        if (rowDiff === -1 && colDiff === 0 && !target) return true;
+                        if (rowDiff === -1 && Math.abs(colDiff) === 1 && target) return true;
+                    } else {
+                        if (from.row === 1 && rowDiff === 2 && colDiff === 0 && !currentBoard[to.row][to.col] && !currentBoard[to.row - 1][to.col]) return true;
+                        if (rowDiff === 1 && colDiff === 0 && !target) return true;
+                        if (rowDiff === 1 && Math.abs(colDiff) === 1 && target) return true;
+                    }
+                    return false;
+                case 'r':
+                    return (rowDiff === 0 || colDiff === 0) && isPathClear(from, to);
+                case 'n':
+                    return (Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 1) || (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2);
+                case 'b':
+                    return Math.abs(rowDiff) === Math.abs(colDiff) && isPathClear(from, to);
+                case 'q':
+                    return ((rowDiff === 0 || colDiff === 0) || Math.abs(rowDiff) === Math.abs(colDiff)) && isPathClear(from, to);
+                case 'k':
+                    return Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1;
+                default:
+                    return false;
+            }
+        }
+
+        function isPathClear(from, to) {
+            const rowStep = Math.sign(to.row - from.row);
+            const colStep = Math.sign(to.col - from.col);
+            let row = from.row + rowStep;
+            let col = from.col + colStep;
+
+            while (row !== to.row || col !== to.col) {
+                if (currentBoard[row][col]) return false;
+                row += rowStep;
+                col += colStep;
+            }
+            return true;
+        }
+
+        function evaluateBoard(boardState = currentBoard) {
+            let score = 0;
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    if (boardState[i][j]) {
+                        score += (boardState[i][j] === boardState[i][j].toLowerCase() ? pieceValues[boardState[i][j]] : -pieceValues[boardState[i][j]]);
+                        if (boardState[i][j] === boardState[i][j].toLowerCase()) {
+                            score += (7 - i) * 0.1;
+                        }
+                    }
+                }
+            }
+            return score;
+        }
+
+        function getAllLegalMoves(isBlack, boardState = currentBoard) {
+            let moves = [];
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    if (boardState[i][j] && (isBlack ? boardState[i][j] === boardState[i][j].toLowerCase() : boardState[i][j] === boardState[i][j].toUpperCase())) {
+                        for (let r = 0; r < 8; r++) {
+                            for (let c = 0; c < 8; c++) {
+                                if (isLegalMove({ row: i, col: j }, { row: r, col: c }, !isBlack)) {
+                                    moves.push({ from: { row: i, col: j }, to: { row: r, col: c } });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+
+        function minimax(depth, isMaximizing, alpha, beta, boardState = currentBoard) {
+            if (depth === 0) return evaluateBoard(boardState);
+
+            const moves = getAllLegalMoves(isMaximizing, boardState);
+            if (moves.length === 0) return evaluateBoard(boardState);
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let move of moves) {
+                    const tempBoard = boardState.map(row => [...row]);
+                    tempBoard[move.to.row][move.to.col] = tempBoard[move.from.row][move.from.col];
+                    tempBoard[move.from.row][move.from.col] = '';
+                    const eval = minimax(depth - 1, false, alpha, beta, tempBoard);
+                    maxEval = Math.max(maxEval, eval);
+                    alpha = Math.max(alpha, eval);
+                    if (beta <= alpha) break;
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let move of moves) {
+                    const tempBoard = boardState.map(row => [...row]);
+                    tempBoard[move.to.row][move.to.col] = tempBoard[move.from.row][move.from.col];
+                    tempBoard[move.from.row][move.from.col] = '';
+                    const eval = minimax(depth - 1, true, alpha, beta, tempBoard);
+                    minEval = Math.min(minEval, eval);
+                    beta = Math.min(beta, eval);
+                    if (beta <= alpha) break;
+                }
+                return minEval;
+            }
+        }
+
+        function aiMove() {
+            const moves = getAllLegalMoves(true);
+            if (moves.length === 0) return;
+
+            let bestMove = null;
+            let bestScore = -Infinity;
+
+            for (let move of moves) {
+                const tempBoard = currentBoard.map(row => [...row]);
+                tempBoard[move.to.row][move.to.col] = tempBoard[move.from.row][move.from.col];
+                tempBoard[move.from.row][move.from.col] = '';
+                const score = minimax(2, false, -Infinity, Infinity, tempBoard);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+
+            if (bestMove) {
+                movePiece(bestMove.from, bestMove.to, false);
+            }
+        }
+
+        function movePiece(from, to, isPlayer) {
+            const move = {
+                from: { row: from.row, col: from.col, piece: currentBoard[from.row][from.col] },
+                to: { row: to.row, col: to.col, piece: currentBoard[to.row][to.col] },
+                isPlayer: isPlayer
+            };
+            if (currentBoard[to.row][to.col]) {
+                if (isPlayer) playerScore += pieceValues[currentBoard[to.row][to.col]];
+                else aiScore += pieceValues[currentBoard[to.row][to.col]];
+            }
+            currentBoard[to.row][to.col] = currentBoard[from.row][from.col];
+            currentBoard[from.row][from.col] = '';
+            moveHistory = moveHistory.slice(0, currentMoveIndex + 1);
+            moveHistory.push(move);
+            currentMoveIndex++;
+            initBoard();
+            playerTurn = !playerTurn;
+            checkWinCondition();
+            updateMoveButtons();
+            updateScore();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `Time: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                if (timeLeft <= 0) showWinScreen('AI Wins - Time Out!');
+            }, 1000);
+        }
+
+        function checkWinCondition() {
+            let whiteKing = false, blackKing = false;
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    if (currentBoard[i][j] === 'K') whiteKing = true;
+                    if (currentBoard[i][j] === 'k') blackKing = true;
+                }
+            }
+            if (!whiteKing) showWinScreen('AI Wins!');
+            if (!blackKing) showWinScreen('Player Wins!');
+        }
+
+        function showWinScreen(message) {
+            clearInterval(timerInterval);
+            document.getElementById('win-message').textContent = message;
+            document.getElementById('final-player-score').textContent = playerScore;
+            document.getElementById('final-ai-score').textContent = aiScore;
+            document.getElementById('win-screen').style.display = 'flex';
+            document.getElementById('game-container').style.display = 'none';
+        }
+
+        function endGame() {
+            if (playerTurn) {
+                showWinScreen(`AI Wins!${aiScore > 0 ? ` AI Score: ${aiScore}` : ''}`);
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('win-screen').style.display = 'none';
+            currentBoard = initialBoard.map(row => [...row]);
+            moveHistory = [];
+            currentMoveIndex = -1;
+            playerScore = 0;
+            aiScore = 0;
+            timeLeft = 600;
+            playerTurn = true;
+            startGame();
+        }
+
+        function logout() {
+            clearInterval(timerInterval);
+            document.getElementById('win-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'block';
+        }
+
+        function prevMove() {
+            if (currentMoveIndex >= 0) {
+                const tempBoard = currentMoveIndex === 0 ? initialBoard : reconstructBoard(currentMoveIndex - 1);
+                initBoard(tempBoard);
+                currentMoveIndex--;
+                updateMoveButtons();
+                displayHistoricalScore();
+            }
+        }
+
+        function nextMove() {
+            if (currentMoveIndex < moveHistory.length - 1) {
+                currentMoveIndex++;
+                const tempBoard = reconstructBoard(currentMoveIndex);
+                initBoard(tempBoard);
+                updateMoveButtons();
+                displayHistoricalScore();
+            } else if (currentMoveIndex === moveHistory.length - 1) {
+                initBoard(currentBoard);
+                updateScore();
+            }
+        }
+
+        function reconstructBoard(index) {
+            let tempBoard = initialBoard.map(row => [...row]);
+            for (let i = 0; i <= index; i++) {
+                const move = moveHistory[i];
+                tempBoard[move.to.row][move.to.col] = move.from.piece;
+                tempBoard[move.from.row][move.from.col] = '';
+            }
+            return tempBoard;
+        }
+
+        function displayHistoricalScore() {
+            let tempPlayerScore = 0;
+            let tempAiScore = 0;
+            for (let i = 0; i <= currentMoveIndex; i++) {
+                const move = moveHistory[i];
+                if (move.to.piece) {
+                    if (move.isPlayer) tempPlayerScore += pieceValues[move.to.piece];
+                    else tempAiScore += pieceValues[move.to.piece];
+                }
+            }
+            document.getElementById('player-score').textContent = tempPlayerScore;
+            document.getElementById('ai-score').textContent = tempAiScore;
+        }
+
+        function updateMoveButtons() {
+            document.getElementById('prev-move').disabled = currentMoveIndex < 0;
+            document.getElementById('next-move').disabled = currentMoveIndex >= moveHistory.length - 1;
+        }
+
+        function updateScore() {
+            document.getElementById('player-score').textContent = playerScore;
+            document.getElementById('ai-score').textContent = aiScore;
+        }
+    </script>
+</body>
+</html>
